@@ -37,6 +37,19 @@ flex-direction:column;
 
 h1{text-align:center;margin-bottom:15px;font-size:26px}
 
+#developerGate{
+display:flex;
+flex-direction:column;
+gap:15px;
+justify-content:center;
+align-items:center;
+flex:1;
+}
+
+#developerGate button{
+width:100%;
+}
+
 input{
 width:100%;
 padding:12px;
@@ -94,14 +107,8 @@ max-width:75%;
 animation:fadeIn 0.2s ease;
 }
 
-.message.self{
-align-self:flex-end;
-text-align:right;
-}
-
-.message.other{
-align-self:flex-start;
-}
+.message.self{align-self:flex-end;text-align:right}
+.message.other{align-self:flex-start}
 
 .bubble{
 padding:8px 12px;
@@ -110,9 +117,7 @@ background:rgba(255,255,255,0.07);
 word-wrap:break-word;
 }
 
-.message.self .bubble{
-background:#5865F2;
-}
+.message.self .bubble{background:#5865F2}
 
 .username{
 font-size:12px;
@@ -120,19 +125,11 @@ opacity:0.7;
 margin-bottom:2px;
 }
 
-.title{
-font-weight:bold;
-margin-left:4px;
-}
-
+.title{font-weight:bold;margin-left:4px}
 .title.Founder{color:gold}
 .title.Administrator{color:violet}
 
-.inputRow{
-display:flex;
-gap:8px;
-}
-
+.inputRow{display:flex;gap:8px}
 #messageInput{flex:1}
 
 @keyframes fadeIn{
@@ -150,17 +147,35 @@ to{opacity:1;transform:translateY(0)}
 
 <h1>🔥 GitChat</h1>
 
+<!-- Developer Login Screen -->
+
+<div id="developerGate">
+
+<h3>Developer Login</h3>
+
+<p style="opacity:0.7;text-align:center">
+Verify with Discord to access GitChat
+</p>
+
+<button onclick="discordLogin()">
+Login with Discord Verification
+</button>
+
+</div>
+
+
+<!-- Chat UI -->
+
+<div id="chatContainer">
+
 <div id="roomSelection">
 
 <input type="text" id="username" placeholder="Enter Username">
-
 <input type="text" id="roomInput" placeholder="Enter Room Name">
 
 <button onclick="joinRoom()">Join / Create Room</button>
 
 </div>
-
-<div id="chatContainer">
 
 <h3 id="roomTitle"></h3>
 
@@ -183,30 +198,22 @@ onkeydown="if(event.key==='Enter')sendMessage()">
 
 <script>
 
-async function verifyUser(){
+// YOUR OAUTH LINK
+const DISCORD_LOGIN =
+"https://discord.com/oauth2/authorize?client_id=1480905315569369220&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&scope=identify";
 
-try{
-
-const res=await fetch("http://localhost:3000/verify",{credentials:"include"})
-const data=await res.json()
-
-if(!data.authorized){
-
-window.location="http://localhost:3000/login"
-
+function discordLogin(){
+window.location = DISCORD_LOGIN;
 }
 
-}catch(e){
-
-window.location="http://localhost:3000/login"
-
+// unlock chat after returning from OAuth
+if(window.location.search.includes("code=")){
+document.getElementById("developerGate").style.display="none";
+document.getElementById("chatContainer").style.display="flex";
 }
-
-}
-
-verifyUser()
 
 </script>
+
 
 <script type="module">
 
@@ -215,14 +222,12 @@ import {getFirestore,collection,addDoc,onSnapshot,query,orderBy} from "https://w
 import {getAuth,signInAnonymously} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js"
 
 const firebaseConfig={
-
 apiKey:"AIzaSyCXi-M0wMZT165T9FHCK8Dw-WJK_I1MuDg",
 authDomain:"gitchat-backend.firebaseapp.com",
 projectId:"gitchat-backend",
 storageBucket:"gitchat-backend.firebasestorage.app",
 messagingSenderId:"385257284178",
 appId:"1:385257284178:web:20d7ce32ba1b1ed554f58b"
-
 }
 
 const app=initializeApp(firebaseConfig)
@@ -237,11 +242,9 @@ let displayName=""
 let unsubscribe=null
 
 const specialUsers={
-
 "AC1DST4R":{title:"Founder",key:"17380324"},
 "mik":{title:"Administrator",key:"612839"},
 "s1lv3rsKKy":{title:"Administrator",key:"718233"}
-
 }
 
 function decodeKey(key){return key}
@@ -252,10 +255,8 @@ username=document.getElementById("username").value.trim()
 currentRoom=document.getElementById("roomInput").value.trim()
 
 if(!username||!currentRoom){
-
 alert("Enter username and room name!")
 return
-
 }
 
 if(specialUsers[username]){
@@ -263,23 +264,16 @@ if(specialUsers[username]){
 const keyInput=prompt(`✨ Your Username is a ${specialUsers[username].title} ✨\nEnter your key:`)
 
 if(keyInput!==decodeKey(specialUsers[username].key)){
-
 alert("Invalid key!")
 return
-
 }
 
 }
-
-document.getElementById("roomSelection").style.display="none"
-document.getElementById("chatContainer").style.display="flex"
 
 displayName=username
 
 if(specialUsers[username]){
-
 displayName+=` (${specialUsers[username].title})`
-
 }
 
 document.getElementById("roomTitle").innerText="Room: "+currentRoom
@@ -298,7 +292,6 @@ const q=query(messagesRef,orderBy("timestamp"))
 unsubscribe=onSnapshot(q,snapshot=>{
 
 const messagesDiv=document.getElementById("messages")
-
 messagesDiv.innerHTML=""
 
 snapshot.forEach(doc=>{
@@ -311,26 +304,7 @@ msgDiv.classList.add(msg.uid===auth.currentUser.uid?"self":"other")
 
 const usernameDiv=document.createElement("div")
 usernameDiv.classList.add("username")
-
-const nameParts=msg.username.match(/(.+?)\s?\((.+)\)?$/)
-
-if(nameParts){
-
-const nameSpan=document.createElement("span")
-nameSpan.textContent=nameParts[1]
-
-const titleSpan=document.createElement("span")
-titleSpan.textContent=`(${nameParts[2]})`
-titleSpan.classList.add("title",nameParts[2])
-
-usernameDiv.appendChild(nameSpan)
-usernameDiv.appendChild(titleSpan)
-
-}else{
-
 usernameDiv.textContent=msg.username
-
-}
 
 const bubbleDiv=document.createElement("div")
 bubbleDiv.classList.add("bubble")
@@ -352,7 +326,6 @@ messagesDiv.scrollTop=messagesDiv.scrollHeight
 window.sendMessage=async function(){
 
 const input=document.getElementById("messageInput")
-
 const text=input.value.trim()
 
 if(!text)return
@@ -360,12 +333,10 @@ if(!text)return
 const messagesRef=collection(db,"rooms",currentRoom,"messages")
 
 await addDoc(messagesRef,{
-
 uid:auth.currentUser.uid,
 username:displayName,
 text:text,
 timestamp:Date.now()
-
 })
 
 input.value=""
