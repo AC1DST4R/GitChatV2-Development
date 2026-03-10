@@ -189,12 +189,11 @@ function decodeKey(key) { return key; }
 // --------------------
 // Discord OAuth login
 // --------------------
-const DISCORD_LOGIN = "https://discord.com/oauth2/authorize?client_id=1480905315569369220&response_type=code&redirect_uri=https%3A%2F%2Fauthenticator-backend-wfyh.onrender.com%2Fcallback&scope=identify";
-
 function discordLogin() {
-  window.location = DISCORD_LOGIN;
+  // Full redirect to Discord OAuth
+  window.location.href = "https://discord.com/oauth2/authorize?client_id=1480905315569369220&response_type=code&redirect_uri=https%3A%2F%2Fauthenticator-backend-wfyh.onrender.com%2Fcallback&scope=identify";
 }
-
+  
 // Check login on page load
 async function checkAuth() {
   try {
